@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; }
+		</style>
+	</head>
+	<body>
+		<script src="js/three.js"></script>
+		<script>
+		function Params() {
+			this.iterations= 13;
+			this.scale= 1;
+		}
+
+		function Rules()  {
+			this.axiom = 'F';
+			this.RuleF = 'F+G';
+			this.RuleG = 'F-G';
+		}
+
+		var rules = new Rules();
+		var params = new Params();
+
+		function GetAxiomDragon() {
+			var Waxiom = rules.axiom;
+			var newf = rules.RuleF;
+			var newg = rules.RuleG;
+			var level = params.iterations;    
+			while (level > 0) {        
+				var m = Waxiom.length;
+				var T = '';        
+				for (var j=0; j < m; j++) {
+					var a = Waxiom[j];
+					if (a == 'F'){T += newf;}
+					else
+					if (a == 'G'){T += newg;}
+						else
+						T += a;
+				}
+				Waxiom = T;
+				level--;
+			}
+			return Waxiom;
+		}
+
+		function GetGeomertyDragon(){
+			var system = GetAxiomDragon();
+			var direction = new THREE.Vector3(-1,1,0);
+			var startPoint = new THREE.Vector3(0,0,0);
+
+			const points = [];
+			points.push(startPoint.clone());
+
+			var lenght = system.length;
+
+			for(var i=0; i < lenght; i++){
+				var current = system[i];
+				if(current == 'F' || current == 'G'){
+					startPoint.addScaledVector(direction,params.scale);
+					points.push(startPoint.clone());
+				}
+				else if(current == '+'){
+					var oldDirection = direction.clone();
+					direction.setY(oldDirection.x);
+					direction.setX(oldDirection.y * -1);
+				}
+				else {
+					var oldDirection = direction.clone();
+					direction.setY(oldDirection.x * -1);
+					direction.setX(oldDirection.y)
+				}
+			}
+
+			return points;
+		}
+
+
+		//Scene setup
+		const renderer = new THREE.WebGLRenderer();
+		renderer.setSize( 1920, 1080 );
+		document.body.appendChild( renderer.domElement );
+
+		const camera = new THREE.PerspectiveCamera( 45, 1920 / 1080, 1, 500 );
+		camera.position.set( 50, -20, 200 );
+		camera.lookAt( 50, -20, 0 );
+
+		const scene = new THREE.Scene();
+
+		//Geometry
+		const material = new THREE.LineBasicMaterial( { color: 0xff8800 } );
+
+		var points = GetGeomertyDragon();
+
+		const geometry = new THREE.BufferGeometry().setFromPoints( points );
+
+		//Render
+		const line = new THREE.Line( geometry, material );
+		scene.add( line );
+		renderer.render( scene, camera );
+
+		</script>
+	</body>
+</html>
